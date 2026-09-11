@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -48,6 +49,7 @@ const embedOrigin = "https://suno.com"
 const chromeUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
 var uuidRE = regexp.MustCompile(`(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
+var shareCodeRE = regexp.MustCompile(`^[A-Za-z0-9_-]{4,64}$`)
 
 // {title} и <title> — одно и то же. Угловые скобки в шелле лучше не использовать.
 var nameTokenRE = regexp.MustCompile(`\{([A-Za-z_]+)\}|<([A-Za-z_]+)>`)
@@ -114,7 +116,7 @@ type cliArgs struct {
 func usage() {
 	fmt.Fprintf(os.Stderr, "Скачать свой трек Suno (расшифрованный MP4/Opus .m4a).\n\n")
 	fmt.Fprintf(os.Stderr, "использование: %s [--out путь] [--name шаблон] [--creds suno_creds.json] <url>\n", filepath.Base(os.Args[0]))
-	fmt.Fprintf(os.Stderr, "  url: https://suno.com/embed/<uuid>, /song/<uuid> или сам uuid\n")
+	fmt.Fprintf(os.Stderr, "  url: embed, /song/<uuid>, /song/<uuid>?sh=…, /s/<код> или uuid\n")
 	fmt.Fprintf(os.Stderr, "  --out    файл .m4a или каталог. Без флага — каталог, откуда вызвали команду\n")
 	fmt.Fprintf(os.Stderr, "  --name   шаблон имени, если --out не указывает конкретный файл\n")
 	fmt.Fprintf(os.Stderr, "           плейсхолдеры: {title} {artist} {id} {handle} {genre} {date} {model}\n")
@@ -200,12 +202,113 @@ func main() {
 	}
 }
 
-func parseClipID(text string) (string, error) {
-	m := uuidRE.FindString(strings.TrimSpace(text))
-	if m == "" {
-		return "", fmt.Errorf("в аргументе нет UUID клипа: %q", text)
+// Ссылка на клип: embed, страница /song, share ?sh= или голый UUID.
+type clipRef struct {
+	ID    string
+	Share string
+	Raw   string
+}
+
+func parseClipRef(text string) (clipRef, error) {
+	text = strings.TrimSpace(text)
+	id := uuidRE.FindString(text)
+	var share string
+	if u, err := url.Parse(text); err == nil {
+		share = strings.TrimSpace(u.Query().Get("sh"))
 	}
-	return strings.ToLower(m), nil
+	if id != "" {
+		return clipRef{ID: strings.ToLower(id), Share: share, Raw: text}, nil
+	}
+	if code := shareCodeFromInput(text); code != "" {
+		return clipRef{Share: code, Raw: text}, nil
+	}
+	return clipRef{}, fmt.Errorf("в аргументе нет UUID клипа и нет /s/<код>: %q", text)
+}
+
+func shareCodeFromInput(text string) string {
+	text = strings.TrimSpace(text)
+	u, err := url.Parse(text)
+	if err != nil {
+		return ""
+	}
+	if u.Scheme == "" && strings.Contains(text, "suno.com/s/") {
+		u, err = url.Parse("https://" + strings.TrimPrefix(strings.TrimPrefix(text, "https://"), "http://"))
+		if err != nil {
+			return ""
+		}
+	}
+	parts := strings.Split(strings.Trim(u.Path, "/"), "/")
+	for i := 0; i < len(parts)-1; i++ {
+		if parts[i] != "s" {
+			continue
+		}
+		code := parts[i+1]
+		if shareCodeRE.MatchString(code) && !uuidRE.MatchString(code) {
+			return code
+		}
+	}
+	return ""
+}
+
+// /s/<код> отвечает 307 на /song/<uuid>?sh=<код> (x-matched-path: /s/[sharecode]).
+func resolveShare(ref clipRef, c creds) (clipRef, error) {
+	if ref.Share == "" {
+		return clipRef{}, errors.New("пустой share-код")
+	}
+	page := embedOrigin + "/s/" + url.PathEscape(ref.Share)
+	fmt.Printf("share-ссылка: %s\n", page)
+	req, err := http.NewRequest(http.MethodGet, page, nil)
+	if err != nil {
+		return clipRef{}, err
+	}
+	for k, v := range baseHeaders(ref, c) {
+		req.Header.Set(k, v)
+	}
+	client := *httpClient
+	client.CheckRedirect = func(*http.Request, []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return clipRef{}, fmt.Errorf("сеть %s: %w", page, err)
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+	loc := strings.TrimSpace(resp.Header.Get("Location"))
+	if loc == "" {
+		return clipRef{}, fmt.Errorf("share-ссылка HTTP %d без Location", resp.StatusCode)
+	}
+	abs, err := resp.Request.URL.Parse(loc)
+	if err != nil {
+		return clipRef{}, fmt.Errorf("не разобрать Location %q: %w", loc, err)
+	}
+	out, err := parseClipRef(abs.String())
+	if err != nil || out.ID == "" {
+		return clipRef{}, fmt.Errorf("share Location не страница песни: %s", abs)
+	}
+	if out.Share == "" {
+		out.Share = ref.Share
+	}
+	return out, nil
+}
+
+func (r clipRef) embedURL() string {
+	u := embedOrigin + "/embed/" + r.ID
+	if r.Share != "" {
+		return u + "?sh=" + url.QueryEscape(r.Share)
+	}
+	return u
+}
+
+func (r clipRef) referer() string {
+	u, err := url.Parse(r.Raw)
+	if err == nil && (u.Scheme == "http" || u.Scheme == "https") {
+		host := strings.ToLower(u.Hostname())
+		if host == "suno.com" || strings.HasSuffix(host, ".suno.com") {
+			return r.Raw
+		}
+	}
+	return r.embedURL()
 }
 
 func loadCreds(path string) (creds, error) {
@@ -318,12 +421,12 @@ func httpRequest(method, url string, body []byte, headers map[string]string) (in
 	return resp.StatusCode, data, nil
 }
 
-func baseHeaders(clipID string, c creds) map[string]string {
+func baseHeaders(ref clipRef, c creds) map[string]string {
 	h := map[string]string{
 		"User-Agent": chromeUA,
 		"Accept":     "*/*",
 		"Origin":     embedOrigin,
-		"Referer":    embedOrigin + "/embed/" + clipID,
+		"Referer":    ref.referer(),
 	}
 	if cookie := cookieHeader(c); cookie != "" {
 		h["Cookie"] = cookie
@@ -444,33 +547,33 @@ func pickEncryptedMedia(clip clipJSON) (mediaItem, error) {
 	return mediaItem{}, errors.New("нет зашифрованного media_urls (m4a-opus/webm-opus с encoding). Незашифрованный audio_url скрипт не подставляет")
 }
 
-func fetchEmbedClip(clipID string, c creds) (clipJSON, error) {
-	url := embedOrigin + "/embed/" + clipID
-	fmt.Printf("эмбед: %s\n", url)
-	h := baseHeaders(clipID, c)
+func fetchEmbedClip(ref clipRef, c creds) (clipJSON, error) {
+	page := ref.embedURL()
+	fmt.Printf("эмбед: %s\n", page)
+	h := baseHeaders(ref, c)
 	h["Accept"] = "text/html,application/xhtml+xml"
-	status, body, err := httpRequest(http.MethodGet, url, nil, h)
+	status, body, err := httpRequest(http.MethodGet, page, nil, h)
 	if err != nil {
 		return clipJSON{}, err
 	}
 	if status != 200 {
 		return clipJSON{}, fmt.Errorf("эмбед HTTP %d", status)
 	}
-	return parseClipFromHTML(string(body), clipID)
+	return parseClipFromHTML(string(body), ref.ID)
 }
 
-func fetchRights(clipID string, c creds) (rightsJSON, error) {
+func fetchRights(ref clipRef, c creds) (rightsJSON, error) {
 	url := apiBase + rightsPath
 	payload, err := json.Marshal(map[string]any{
 		"content_params": map[string]string{
-			"content_id":   clipID,
+			"content_id":   ref.ID,
 			"content_type": rightsContentType,
 		},
 	})
 	if err != nil {
 		return rightsJSON{}, err
 	}
-	h := baseHeaders(clipID, c)
+	h := baseHeaders(ref, c)
 	h["Content-Type"] = "application/json"
 	h["Accept"] = "application/json"
 	fmt.Printf("лицензия: POST %s\n", url)
@@ -695,12 +798,6 @@ func defaultCredsPath() string {
 }
 
 func download(urlOrID, outFlag, nameTmpl, credsPath string) error {
-	clipID, err := parseClipID(urlOrID)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("id: %s\n", clipID)
-
 	c, err := loadCreds(credsPath)
 	if err != nil {
 		return err
@@ -718,12 +815,27 @@ func download(urlOrID, outFlag, nameTmpl, credsPath string) error {
 		fmt.Println("креды: не заданы, иду без сессии")
 	}
 
-	clip, err := fetchEmbedClip(clipID, c)
+	ref, err := parseClipRef(urlOrID)
+	if err != nil {
+		return err
+	}
+	if ref.ID == "" {
+		ref, err = resolveShare(ref, c)
+		if err != nil {
+			return err
+		}
+	}
+	fmt.Printf("id: %s\n", ref.ID)
+	if ref.Share != "" {
+		fmt.Printf("share: %s\n", ref.Share)
+	}
+
+	clip, err := fetchEmbedClip(ref, c)
 	if err != nil {
 		return err
 	}
 	if clip.ID == "" {
-		clip.ID = clipID
+		clip.ID = ref.ID
 	}
 	title := clip.Title
 	if title == "" {
@@ -735,7 +847,7 @@ func download(urlOrID, outFlag, nameTmpl, credsPath string) error {
 	}
 	fmt.Printf("медиа: %s %s %s\n", media.ContentType, media.Delivery, media.URL)
 
-	rights, err := fetchRights(clipID, c)
+	rights, err := fetchRights(ref, c)
 	if err != nil {
 		return err
 	}
@@ -743,17 +855,17 @@ func download(urlOrID, outFlag, nameTmpl, credsPath string) error {
 	if err != nil {
 		return err
 	}
-	contentKey, err := unwrapField(rights.Key, clipID, gcmKey)
+	contentKey, err := unwrapField(rights.Key, ref.ID, gcmKey)
 	if err != nil {
 		return err
 	}
-	contentIV, err := unwrapField(rights.IV, clipID, gcmKey)
+	contentIV, err := unwrapField(rights.IV, ref.ID, gcmKey)
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("скачиваю шифротекст…")
-	status, ciphertext, err := httpRequest(http.MethodGet, media.URL, nil, baseHeaders(clipID, c))
+	status, ciphertext, err := httpRequest(http.MethodGet, media.URL, nil, baseHeaders(ref, c))
 	if err != nil {
 		return err
 	}
@@ -780,7 +892,7 @@ func download(urlOrID, outFlag, nameTmpl, credsPath string) error {
 	var cover []byte
 	if strings.TrimSpace(clip.ImageURL) != "" {
 		fmt.Println("обложка: скачиваю…")
-		cover, err = fetchCover(clip.ImageURL, clipID, c)
+		cover, err = fetchCover(clip.ImageURL, ref, c)
 		if err != nil {
 			return err
 		}

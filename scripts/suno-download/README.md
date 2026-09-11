@@ -22,12 +22,16 @@ cd ~/Music
 # → ~/Music/Dancefloor rollers - dfdc0fc2-….m4a и .json рядом
 ```
 
-То же по странице песни или по голому id:
+То же по странице песни, share-ссылке (`?sh=` или короткая `/s/…`) или по голому id:
 
 ```bash
 ./suno-download 'https://suno.com/song/dfdc0fc2-679b-4d68-b3a7-e1f76e18bcf5'
+./suno-download 'https://suno.com/song/7fb8ea93-43c5-4149-a2a9-68573b357a6f?sh=SdRlW37AUjSqm19I'
+./suno-download 'https://suno.com/s/SdRlW37AUjSqm19I'
 ./suno-download dfdc0fc2-679b-4d68-b3a7-e1f76e18bcf5
 ```
+
+`/s/<код>` на стороне Suno отвечает 307 на `/song/<uuid>?sh=<код>`. Параметр `sh` после этого уходит в эмбед и в Referer. Кавычки вокруг URL обязательны — иначе шелл отрежет query.
 
 Шаблон имени (кавычки обязательны, иначе шелл съест скобки):
 

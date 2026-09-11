@@ -76,8 +76,8 @@ func mergeComment(existing, model, created, id string) string {
 	return c
 }
 
-func fetchCover(imageURL, clipID string, c creds) ([]byte, error) {
-	status, body, err := httpRequest(http.MethodGet, imageURL, nil, baseHeaders(clipID, c))
+func fetchCover(imageURL string, ref clipRef, c creds) ([]byte, error) {
+	status, body, err := httpRequest(http.MethodGet, imageURL, nil, baseHeaders(ref, c))
 	if err != nil {
 		return nil, fmt.Errorf("не скачалась обложка: %w", err)
 	}
