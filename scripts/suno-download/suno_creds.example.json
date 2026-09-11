@@ -1,0 +1,6 @@
+{
+  "cookies": "__session=PASTE_CLERK_SESSION; other=optional",
+  "headers": {
+    "Authorization": "Bearer PASTE_CLERK_JWT"
+  }
+}

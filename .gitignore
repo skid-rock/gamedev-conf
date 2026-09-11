@@ -1,0 +1,12 @@
+# Креды Suno — не коммитить
+suno_creds.json
+scripts/suno_creds.json
+scripts/suno-download/suno_creds.json
+
+# Скачанные треки, sidecar и собранный бинарник
+*.m4a
+scripts/suno-download/*.json
+!scripts/suno-download/suno_creds.example.json
+scripts/suno-download/suno-download
+
+/gamepush
