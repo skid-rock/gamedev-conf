@@ -118,6 +118,7 @@ func usage() {
 	fmt.Fprintf(os.Stderr, "использование: %s [--out путь] [--name шаблон] [--creds suno_creds.json] <url>\n", filepath.Base(os.Args[0]))
 	fmt.Fprintf(os.Stderr, "  url: embed, /song/<uuid>, /song/<uuid>?sh=…, /s/<код> или uuid\n")
 	fmt.Fprintf(os.Stderr, "  --out    файл .m4a или каталог. Без флага — каталог, откуда вызвали команду\n")
+	fmt.Fprintf(os.Stderr, "           если файл уже есть — как в Finder: «имя 2.m4a», «имя 3.m4a»\n")
 	fmt.Fprintf(os.Stderr, "  --name   шаблон имени, если --out не указывает конкретный файл\n")
 	fmt.Fprintf(os.Stderr, "           плейсхолдеры: {title} {artist} {id} {handle} {genre} {date} {model}\n")
 	fmt.Fprintf(os.Stderr, "           по умолчанию: %s\n", defaultNameTemplate)
@@ -779,6 +780,32 @@ func resolveOutPath(outFlag, nameTmpl string, clip clipJSON) (string, error) {
 	return filepath.Abs(p)
 }
 
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func outPathTaken(m4aPath string) bool {
+	return fileExists(m4aPath) || fileExists(sidecarPath(m4aPath))
+}
+
+// Как Finder «Keep Both»: file.m4a → file 2.m4a → file 3.m4a.
+func uniqueOutPath(path string) (string, error) {
+	if !outPathTaken(path) {
+		return path, nil
+	}
+	dir := filepath.Dir(path)
+	ext := filepath.Ext(path)
+	base := strings.TrimSuffix(filepath.Base(path), ext)
+	for n := 2; n <= 9999; n++ {
+		cand := filepath.Join(dir, fmt.Sprintf("%s %d%s", base, n, ext))
+		if !outPathTaken(cand) {
+			return cand, nil
+		}
+	}
+	return "", fmt.Errorf("не нашёл свободное имя после %q", path)
+}
+
 func defaultCredsPath() string {
 	cwd, _ := os.Getwd()
 	exe, _ := os.Executable()
@@ -911,6 +938,14 @@ func download(urlOrID, outFlag, nameTmpl, credsPath string) error {
 	outPath, err := resolveOutPath(outFlag, nameTmpl, clip)
 	if err != nil {
 		return err
+	}
+	wanted := outPath
+	outPath, err = uniqueOutPath(outPath)
+	if err != nil {
+		return err
+	}
+	if outPath != wanted {
+		fmt.Printf("уже есть %s, пишу %s\n", filepath.Base(wanted), filepath.Base(outPath))
 	}
 	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
 		return err
