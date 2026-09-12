@@ -64,7 +64,7 @@
 | Variety         | Normal                                      | Normal     | 0 — иначе разброс дублей забьёт эффект промпта |
 | Max Mode        | выкл                                        | выкл       | R3 (Cover) — вкл                               |
 | Duration Custom | 3:15                                        | 3:45       | как у базового промпта                         |
-| Exclude Styles | `lyrics, sung words, rap, vocals, singing, soft pads, piano, brass, trumpets, horns, fanfare, orchestral, strings, live instruments` | то же плюс по промпту | по промпту |
+| Exclude Styles | `lyrics, sung words, rap, vocals, singing, soft pads, piano, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band` | то же плюс по промпту | по промпту |
 
 Слово «instrumental» и «no ...» в Style не пишем — тумблер и Exclude. Формат Style — как в файле 04. Suno у себя
 переписывает промпт в форму с двоеточием (так он выглядит в json из gamepush), это не наша
@@ -75,7 +75,7 @@
 | Залп | Что                                                      | Пар   | Когда                |
 |------|----------------------------------------------------------|-------|----------------------|
 | 1    | R1, R2, R3 по одной паре + J1–J6 по две пары             | 15    | сразу                |
-| 2    | N1–N5 по две пары + доработка 2–3 лучших J по одной паре | 12–14 | после оценок залпа 1 |
+| 2    | J1–J6 по две пары (второй заход, раздел ниже) + N1–N5 по две пары | 22    | после оценок залпа 1 |
 | 3    | добор дыр в трек-листе                                   | 4–6   | после оценок залпа 2 |
 
 После залпа 3: отбор 10–11, порядок, названия.
@@ -87,12 +87,12 @@ suno-download с `--name '{artist} - {title}'`, где title — рабочий 
 
 | Код | Что                        | Поджанр     | Ось разнообразия                                                    |
 |-----|----------------------------|-------------|---------------------------------------------------------------------|
-| J1  | базовый, контрольная точка | jump-up     | NES-лид дублирует бас, наглый                                       |
-| J2  | FM-версия                  | jump-up     | Mega Drive slap bass, металлический FM-лид, ночной клубный тон      |
-| J3  | военный                    | jump-up     | марш-стаккато, гармонический минор, взрывы                          |
-| J4  | аркадный                   | jump-up     | Neo Geo дудки, лид ведёт свою мелодию поверх баса                   |
-| J5  | с приправой neuro          | jump-up     | бас с меняющимся тембром, two-step и 8-bit на месте                 |
-| J6  | солнечный                  | jump-up     | мажор, бонус-уровень, фанфары «stage clear»                         |
+| J1  | NES, наглый                | jump-up     | pulse-лид дублирует talking bass; пара 2 — приёмы Capcom-чиптюна   |
+| J2  | Mega Drive, светлая        | jump-up     | FM slap-бас, мажор, скорость, jazz-funk-стабы                       |
+| J3  | Mega Drive, индустриальная | jump-up     | перегруженный FM-бас, металлическая перкуссия, минор, взрывы        |
+| J4  | SNES, геройское с грустью  | jump-up     | лид ведёт парящую мелодию, бас галопом, сэмплерная 16-bit-палитра   |
+| J5  | Mega Drive, клубная        | jump-up     | FM-хаус-стабы, ночной город; пара 2 — приправа neuro                |
+| J6  | PlayStation, солнечный     | jump-up     | рейв-стабы и ховер начала 90-х, мажор, CD-палитра, SFX бонуса       |
 | N1  | jungle 8-bit               | jungle      | amen-брейк, 8-bit-мелодия                                           |
 | N2  | jungle с talking bass      | jungle      | amen + jump-up-бас, мост между ядром и jungle                       |
 | N3  | роллер                     | dancefloor  | ровный грув, 8-bit-лид как единственная мелодия                     |
@@ -103,7 +103,39 @@ suno-download с `--name '{artist} - {title}'`, где title — рабочий 
 Если после залпа 1 две оси ядра сольются на слух, одну заменяю на «тёмный» jump-up с half-time-вставкой в середине
 трека.
 
-**После залпа 1:** оси J1–J6 пересобираются как «консоль + настроение», по одной консоли на трек, чтобы у каждого было ожидание. Зафиксировано: J3 — Amiga. Остальная раскладка обсуждается в отдельной сессии, промпты J переписываются после неё.
+### Раскладка ядра — консоль, настроение, ожидание
+
+Решено 12.09.2026 на отдельной grill-сессии после залпа 1. Правила:
+
+- **База везде jump-up.** Консоль даёт приёмы и ходы, не жанр. В ожидании так и пишем: «jump-up, в который подмешано …».
+- **Консоли только четыре:** NES, Mega Drive, SNES, PlayStation. Amiga, Game Boy, Neo Geo, PC Engine, C64 — нет. Вариант «J3 — Amiga» отменён пользователем в пользу Mega Drive.
+- **Консоль может повториться, палитра — нет.** Mega Drive стоит трижды (J2, J3, J5), различаем словами: у J2 фанковый slap-бас и мажор, у J3 дисторшн, металл и минор, у J5 хаус-стабы и ровный грув без дисторшна.
+- **Названий игр в Style нет** (итог R1). Ориентиры ниже — только для слуха и для строки «Ожидание».
+- **Гитары:** гитароподобный перегруженный бас и пауэр-аккорды за басом — можно, гитара-лид и соло — нет. В базовый Exclude добавлено `lead guitar, guitar solo, rock band`, слово `guitars` целиком не пишем, иначе уйдёт и бас.
+- **Оценка залпа 2 отвечает на вопрос «попал ли в ожидание»**, а не «хорош ли трек». Для этого под каждым промптом строка «Ожидание».
+
+| Код | Консоль | Настроение | Ожидание: интро и первые 30 с дропа | Темп | Пары |
+|---|---|---|---|---|---|
+| J1 | NES | наглый, драйв | pulse-лид дублирует talking bass, two-step, аркадные SFX | 175 | 1: эталон J1-1b, Style слово в слово. 2: приёмы Capcom-чиптюна: арпеджио аккордов, имитация slap-баса, драйв |
+| J2 | Mega Drive, светлая | скорость, мажор, фанк | FM slap-бас с walking-ходами, яркий FM-лид дублирует хук, jazz-funk-аккорды, ощущение первого уровня платформера | 176 | обе одинаковые, отбор по слуху |
+| J3 | Mega Drive, индустриальная | война, безостановочность, антиутопия | перегруженный FM-бас, дисторшн-стабы, металлическая перкуссия, минор, взрывы и выстрелы как SFX | 176 | обе одинаковые |
+| J4 | SNES | геройское с грустинкой | pulse-лид ведёт свою парящую мелодию, бас галопом, сэмплерная 16-bit-палитра без оркестра | 172 | 1: чистый лид. 2: плюс guitar-like пауэр-аккорды за басом |
+| J5 | Mega Drive, клубная | ночной город, ранние 90-е | FM-хаус-стабы, ровный клубный грув, FM-бас без дисторшна, городские SFX (сирена, стекло) | 172 | 1: без neuro. 2: плюс `evolving modulated texture` |
+| J6 | PlayStation | солнечный, скорость, бонус | рейв-стабы и ховер начала 90-х, мажор, CD-палитра вокруг FM-лида, SFX бонуса и чекпойнта | 174 | обе одинаковые |
+
+Ориентиры по слуху (описания жанров — из поиска пользователя, в Style не идут): J1 — Darkwing Duck NES (Capcom-чиптюн, арпеджио аккордов, имитация slap-баса, драйв, хуковая мелодика; нуарную часть не берём, она на отдельный альбом); J2 — Sonic the Hedgehog, Green Hill Zone (16-bit FM, jazz-funk, walking bass, мажор, хуки); J3 — Contra Hard Corps (FM hardcore techno, перегруженный бас, металлическая перкуссия, киберпанк, безостановочность); J4 — Mega Man X (парящая мелодия, галопирующий бас, геройское с меланхолией, пронзительный лид); J5 — Streets of Rage 1 (клубная музыка ранних 90-х, хаус, FM, городская грязца); J6 — Ridge Racer / Ridge Racer Type 4 (дневная трасса, рейв ранних 90-х, мажор, CD-звук).
+
+### Референсы для слуха, не для промптов
+
+Список по памяти, по сети не проверен. Слушать интро и первые 30 секунд каждой темы, как и наши дубли. Композиторов не пишем.
+
+- **NES (J1):** Darkwing Duck, Mega Man 2 (Dr. Wily Stage 1, Air Man), Contra (Jungle), Castlevania (Vampire Killer), Batman NES и Journey to Silius (знаменитый бас, ближе всего к формуле «бас-хук, лид дублирует»), Ninja Gaiden, DuckTales (The Moon).
+- **Mega Drive, светлая (J2):** Sonic 1 (Green Hill Zone, Starlight Zone), Sonic 2 (Emerald Hill, Casino Night, Chemical Plant), Sonic 3 (Hydrocity, Ice Cap), Ristar, Rocket Knight Adventures, ToeJam & Earl (чистый FM-фанк), Aero the Acro-bat, Gunstar Heroes.
+- **Mega Drive, индустриальная (J3):** Contra Hard Corps, Thunder Force IV, The Revenge of Shinobi и Shinobi III, Streets of Rage 3 (почти хардкор-техно), Batman Mega Drive.
+- **Mega Drive, клубная (J5):** Streets of Rage 1 (Fighting in the Street), Streets of Rage 2 (Go Straight, Dreamer, Never Return Alive), Vectorman.
+- **SNES (J4):** Mega Man X (Storm Eagle, Spark Mandrill), Donkey Kong Country (Fear Factory, Mine Cart Madness), F-Zero (Mute City, Big Blue), Star Fox (Corneria). Заодно слышно, где на SNES начинаются струнные и духовые, которых нам нельзя.
+- **PlayStation (J6):** Ridge Racer, Ridge Racer Type 4, Wipeout (лицензированное техно, палитра эпохи), Jumping Flash!. Отвергнутая альтернатива: Crash Bandicoot / Spyro — мультяшный бонус-уровень, но живая перкуссия воюет с Exclude.
+- **Отвергнутые консоли, для памяти:** Amiga (Turrican II, Alien Breed, Project-X, The Chaos Engine) — трекерный звук, был вариант J3; Game Boy (Tetris Type A, Super Mario Land, Kirby's Dream Land) — был вариант J6.
 
 ---
 
@@ -329,6 +361,367 @@ jump up drum and bass, sunny and playful, punchy two-step breakbeat, snappy snar
 ### Нуарный пул — на отдельный альбом
 
 R1 и R2 дали кинематографичный 8-битный нуар с озорством, джаз-роком и цирком (по описанию пользователя: ближе к Darkwing Duck и Aero the Acro-bat, чем к Contra). В этот альбом не берём, настроение другое. Ссылки — в журнале, строки R1-a, R1-b, R2-a, R2-b. Рецепт: J1 плюс гармонический минор и NES-арпеджио аккордов; духовые заменить синтетикой.
+
+## Залп 2 — ядро jump-up, второй заход
+
+Промпты по раскладке «консоль + настроение + ожидание» (раздел «Раскладка ядра»). Все J: v6, Weirdness 45%, Variety
+Normal, Style Influence 80%, Duration 3:15, по две пары на трек. Рабочее название в Suno — код. Промпты залпа 1 выше
+остаются как история, в Suno их больше не запускаем.
+
+Оценка каждого дубля — «попал ли в ожидание» из строки под промптом, плюс обычная цифра 1–5. Где пары различаются
+(J1, J4, J5), у второй пары свой Style, помечен.
+
+Базовый Exclude для всех J (таблица «Настройки»):
+`lyrics, sung words, rap, vocals, singing, soft pads, piano, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
+
+### J1. NES — наглый, драйв
+
+Первая пара — эталон J1-1b, Style слово в слово из sidecar в gamepush, меняется только Exclude. Вторая пара — новый
+вариант с приёмами Capcom-чиптюна: арпеджио аккордов, имитация slap-баса, драйв. Нуарных слов нет.
+
+**Ожидание:** NES. Наглый, драйвовый. В интро аркадные SFX и филл, на дропе talking bass и pulse-лид, который его
+дублирует нота в ноту, two-step. Во второй паре сверху быстрые арпеджио аккордов, бас с «щелчком» slap-артикуляции.
+Ничего живого, никаких духовых.
+
+**Style, пара 1 (эталон, не менять):**
+```
+Drum and bass, jump-up instrumental at 175 BPM: cheeky hyped energy, 8-bit square lead doubling the bass riff, wobbling talking bass hook, punchy two-step breakbeat, snappy snare, arcade effects, loud club mix with intro, drops, switch, filtered breakdown, and clean outro
+```
+
+**Style, пара 2 (Capcom-вариант):**
+```
+jump up drum and bass, cheeky and hyped, driving action energy, punchy two-step breakbeat, snappy snare, wobbling talking bass riff with 8-bit slap bass articulation, 8-bit square lead doubling the bass riff, fast NES-style arpeggiated chord stabs, catchy hook-heavy riff, arcade sound effects, loud club mix, 175 BPM
+```
+
+**Lyrics, обе пары:**
+```
+[Intro: arcade sound effects and drum fill, 8 bars]
+[Drop: wobbling bass riff and two-step breakbeat, 8-bit lead doubles the riff, main hook]
+[Switch: bass riff changes pattern, same drums]
+[Breakdown: drums out, bass riff filtered, snare roll]
+[Drop: full hook returns louder]
+[Outro: one final bass hit, clean stop]
+```
+
+Во второй паре в тег `[Drop]` дописать `, arpeggiated chord stabs on top`.
+
+**Exclude Styles:** базовый.
+
+**Пара 3 — структура B.** Style и Exclude пары 2 (Capcom-вариант; эталонный Style пары 1 не годится, в нём форма
+зашита словами). Схема «босс-раш»: без раскачки, дроп сразу, ложная концовка со звуком 1-up посреди трека, финальный
+дроп с контр-риффом лида.
+
+**Ожидание, пара 3:** палитра пары 2. Барабанный филл и сразу дроп; после switch всё обрывается на одном ударе баса,
+звук 1-up, пауза, и хук возвращается громче; в последнем дропе лид играет не рифф баса, а свой ответ ему.
+
+**Lyrics, пара 3 (структура B):**
+```
+[Intro: drum fill only, 4 bars]
+[Drop: wobbling bass riff and two-step breakbeat immediately, 8-bit lead doubles the riff, 32 bars]
+[Switch: bass riff changes pattern, arpeggiated chord stabs enter, 16 bars]
+[Fake ending: everything stops on one bass hit, 1-up sound effect, 2 bars of silence]
+[Drop: full hook returns louder, 32 bars]
+[Breakdown: drums out, bass riff filtered, snare roll, 8 bars]
+[Drop: final hook, 8-bit lead plays a counter-riff answering the bass, 16 bars]
+[Outro: one final bass hit, clean stop]
+```
+
+### J2. Mega Drive, светлая сторона — скорость, мажор, фанк
+
+**Ожидание:** Mega Drive. Первый уровень платформера: солнечно, быстро, мажор. На дропе FM slap-бас с walking-ходами
+между фразами, яркий металлический FM-лид дублирует хук, между ними jazz-funk-аккорды FM-стабами. SFX — монетки и
+прыжки. Ни труб, ни струнных: стабы синтетические.
+
+**Style:**
+```
+jump up drum and bass, bright and fast, speedy platformer energy, bright major key, punchy two-step breakbeat, snappy snare, FM synth slap bass riff with walking bass runs, bright metallic FM lead doubling the bass riff, jazz-funk FM synth chord stabs, 16-bit era FM synthesis palette, coin and jump sound effects, loud club mix, 176 BPM
+```
+
+**Lyrics:**
+```
+[Intro: FM chord stab and coin sounds, drum fill, 8 bars]
+[Drop: FM slap bass riff and two-step breakbeat, FM lead doubles the riff, jazz-funk chord stabs]
+[Switch: bass riff changes pattern, walking bass run, same drums]
+[Breakdown: drums out, bass riff filtered, FM chord stabs answer, snare roll]
+[Drop: full hook returns louder]
+[Outro: one final bass hit, clean stop]
+```
+
+**Exclude Styles:** базовый плюс `minor key, dark`.
+
+**Пара 3 — без slap-баса и jazz-funk.** По первым дублям пары 1: настроение классное, но slap-бас и jazz-funk-стабы
+делают музыку слишком сумасшедшей. Бас возвращается к обычному talking bass, стабы простые и яркие. Sonic остаётся
+через мажор, скорость и хуковый FM-лид.
+
+**Ожидание, пара 3:** то же, что у пар 1–2, но бас ровный, без щелчков и walking-ходов, аккорды простые, без джазовых
+надстроек. Спокойнее по гармонии, такая же быстрая.
+
+**Style, пара 3:**
+```
+jump up drum and bass, bright and fast, speedy platformer energy, bright major key, punchy two-step breakbeat, snappy snare, wobbling FM synth talking bass riff, bright metallic FM lead doubling the bass riff with a catchy hook, simple bright FM synth chord stabs, 16-bit era FM synthesis palette, coin and jump sound effects, loud club mix, 176 BPM
+```
+
+**Lyrics, пара 3:**
+```
+[Intro: FM chord stab and coin sounds, drum fill, 8 bars]
+[Drop: wobbling FM bass riff and two-step breakbeat, FM lead doubles the riff, bright chord stabs]
+[Switch: bass riff changes pattern, same drums]
+[Breakdown: drums out, bass riff filtered, FM chord stabs answer, snare roll]
+[Drop: full hook returns louder]
+[Outro: one final bass hit, clean stop]
+```
+
+**Exclude Styles, пара 3:** базовый плюс `minor key, dark, slap bass, jazz, funk`.
+
+**Пара 4 — структура B.** Все J залпа 2 идут по одному скелету (intro → drop → switch → breakdown → drop → outro,
+схема A, унаследована от эталона J1). Здесь первая проба другой формы: Style и Exclude — как у пары 3, меняется только
+Lyrics. Лид заявляет хук до баса, как мелодичное интро платформера; вместо switch — второй дроп со вторым хуком; outro
+лидом соло. Счёт тактов вне интро — эксперимент, читает ли его v6 [не проверено, файл 02].
+
+**Ожидание, пара 4:** палитра пары 3. Первые секунды — FM-лид один с монетками, без барабанов; барабаны входят на build;
+на первом дропе бас берёт хук лида; второй дроп даёт новый паттерн баса и второй хук; в конце лид один раз играет хук
+без ритма и стоп.
+
+**Lyrics, пара 4 (структура B):**
+```
+[Intro: FM lead plays the main hook alone over coin sounds, no drums, 8 bars]
+[Build: two-step drums enter, bass hinted, snare roll, 8 bars]
+[Drop: wobbling FM bass riff and two-step breakbeat, FM lead doubles the riff, 32 bars]
+[Second drop: bass riff changes to a new pattern, FM lead answers with a second hook, 16 bars]
+[Breakdown: drums out, bright chord stabs and lead hook only, jump sound effect, 8 bars]
+[Drop: first riff returns louder, both hooks trade, 32 bars]
+[Outro: drums stop dead, FM lead plays the hook once alone, clean stop]
+```
+
+Оценка пары 4 против пары 3: слышна ли разница формы, держит ли модель второй хук, не потерялся ли jump-up на длинном
+дропе. Свои схемы B у J1, J3, J4, J5, J6 — под каждым промптом, пара 3.
+
+### J3. Mega Drive, индустриальная сторона — война, безостановочность
+
+**Ожидание:** Mega Drive. Антиутопия, run-and-gun без передышки, минор. На дропе перегруженный FM-бас, звучащий почти как
+гитара, дисторшн-лид дублирует рифф, металлические перкуссионные удары поверх two-step. SFX — взрывы и выстрелы, сирена
+в интро. Никаких струнных: минор держится синтетикой.
+
+**Style:**
+```
+jump up drum and bass, relentless and dystopian, gritty industrial 16-bit FM synthesis, punchy two-step breakbeat, snappy snare, metallic percussion hits, overdriven FM bass riff, distorted FM lead doubling the bass riff in minor key, aggressive distorted FM synth stabs, explosion and gunfire sound effects, loud club mix, 176 BPM
+```
+
+**Lyrics:**
+```
+[Intro: alarm siren and explosion, machine gun snare roll, 8 bars]
+[Drop: overdriven bass riff and two-step breakbeat, distorted lead doubles the riff, metallic hits]
+[Switch: bass riff changes pattern, same drums, distorted stabs faster]
+[Breakdown: drums out, overdriven bass alone, metallic hits, single explosion, snare roll]
+[Drop: full hook returns louder]
+[Outro: one final bass hit, clean stop]
+```
+
+**Exclude Styles:** базовый плюс `happy, major key`.
+
+**Пара 3 — структура B.** Style и Exclude пар 1–2. Схема «без передышки»: breakdown нет вовсе, вместо него восемь
+тактов half-time с перегруженным басом на третьей доле, потом two-step возвращается на полной скорости. Заканчивается
+взрывом, а не чистым ударом.
+
+**Ожидание, пара 3:** палитра та же. Сирена, четыре такта снейр-ролла и сразу дроп; после switch барабаны падают в
+половинный темп, бас бьёт тяжёлыми стабами; возврат в two-step должен ощущаться как рывок; в конце всё обрывается
+взрывом.
+
+**Lyrics, пара 3 (структура B):**
+```
+[Intro: alarm siren, machine gun snare roll, 4 bars]
+[Drop: overdriven bass riff and two-step breakbeat, distorted lead doubles the riff, metallic hits, 32 bars]
+[Switch: bass riff changes pattern, distorted stabs faster, 16 bars]
+[Half-time: drums drop to half-time, overdriven bass stabs on the three, 8 bars]
+[Drop: two-step returns at full speed, full hook louder, 32 bars]
+[Switch: new bass pattern, metallic hits doubled, 16 bars]
+[Outro: everything cuts on a single explosion, end]
+```
+
+### J4. SNES — геройское с грустинкой, лид ведёт мелодию
+
+Вторая формула хука: лид не дублирует бас, а играет свою мелодию. Первая пара — чистый pulse-лид. Вторая — тот же лид
+плюс сэмплерные гитароподобные пауэр-аккорды за басом (ход в духе Metrik, но в консольной палитре).
+
+**Ожидание:** SNES. Геройское с меланхолией, минор с просветами. В интро чиптюн-арпеджио и лид один раз играет мелодию.
+На дропе бас галопом, пронзительный pulse-лид ведёт парящую мелодию сверху, палитра сэмплерная, 16-bit, без оркестра.
+Во второй паре под лидом слышны короткие пауэр-аккорды, повторяющие бас. Гитары-соло нет.
+
+**Style, пара 1:**
+```
+jump up drum and bass, hyped and bittersweet, soaring melodic energy, punchy two-step breakbeat, snappy snare, galloping wobbling bass riff, piercing pulse wave lead plays its own soaring melody over the bass, sampled 16-bit console synth palette, bright chiptune arpeggios, jump and charged shot sound effects, loud club mix, 172 BPM
+```
+
+**Style, пара 2 (плюс пауэр-аккорды):**
+```
+jump up drum and bass, hyped and bittersweet, soaring melodic energy, punchy two-step breakbeat, snappy snare, galloping wobbling bass riff, sampled 16-bit guitar-like power chord stabs following the bass, piercing pulse wave lead plays its own soaring melody over the bass, sampled 16-bit console synth palette, bright chiptune arpeggios, jump and charged shot sound effects, loud club mix, 172 BPM
+```
+
+**Lyrics, обе пары:**
+```
+[Intro: chiptune arpeggio alone, pulse lead plays the melody once, drum fill]
+[Drop: galloping bass riff and two-step breakbeat, pulse lead plays the main melody on top]
+[Switch: bass changes pattern, lead melody continues, same drums]
+[Breakdown: drums out, lead melody alone with arpeggios, snare roll]
+[Drop: bass riff and lead melody together, louder]
+[Outro: one final bass hit, clean stop]
+```
+
+Во второй паре в тег `[Drop]` дописать `, power chord stabs follow the bass`.
+
+**Exclude Styles:** базовый.
+
+Оценка: осталась ли мелодия в голове. Если лид опять дублирует бас — усиливаем `lead melody independent from the bass`.
+
+**Пара 3 — структура B.** Style и Exclude пары 1 (чистый лид). Схема «тема прежде всего»: длинное интро, лид играет
+всю мелодию до барабанов и баса, switch нет, в breakdown лид играет вторую мелодию, финальный дроп возвращает первую.
+Outro — концовка мелодии соло над арпеджио.
+
+**Ожидание, пара 3:** палитра та же. Первые 16 тактов без барабанов: арпеджио, затем мелодия целиком; барабаны входят
+отдельной секцией; на дропе бас галопом под уже знакомой мелодией; в breakdown другая мелодия, и по ней слышно, что
+лид ведёт, а не дублирует.
+
+**Lyrics, пара 3 (структура B):**
+```
+[Intro: chiptune arpeggio alone, no drums, 8 bars]
+[Intro: pulse lead plays the full melody over the arpeggio, no drums, 8 bars]
+[Build: two-step drums enter, snare roll, 8 bars]
+[Drop: galloping bass riff and two-step breakbeat, pulse lead plays the main melody on top, 32 bars]
+[Breakdown: drums out, pulse lead plays a second melody with arpeggios, 16 bars]
+[Drop: bass riff and first melody together, louder, 32 bars]
+[Outro: drums stop, pulse lead plays the melody ending alone over the arpeggio, clean stop]
+```
+
+**Пара 4 — 80/20 от пары 2.** По оценке пользователя после первых дублей: J4 «вообще крутая», особенно часть с
+пауэр-аккордами, и главное — геройское с меланхолией, минор с просветами, мелодия как соло. Это то, что у него
+ассоциируется с играми. Задача пары 4: сохранить 80% пары 2 и добавить 20% вариативности. Style пары 2 плюс два
+уточнения: `melancholic minor melody with brief major key lifts` и `expressive pulse wave lead solo`. Структура A, но
+перед последним дропом секция соло: барабаны и бас идут, лид играет развёрнутую меланхоличную мелодию с подъёмом в
+мажор. Exclude тот же, `guitar solo` в базовом списке страхует от гитары на слове solo.
+
+**Ожидание, пара 4:** палитра пары 2, пауэр-аккорды за басом на месте. Первые 30 секунд дропа — как у пары 2. Новое
+слышно после второго дропа: лид уходит в соло на несколько фраз, мелодия минорная с просветом в мажор, потом главная
+мелодия возвращается на один последний дроп.
+
+**Style, пара 4:**
+```
+jump up drum and bass, hyped and bittersweet, soaring melodic energy, melancholic minor melody with brief major key lifts, punchy two-step breakbeat, snappy snare, galloping wobbling bass riff, sampled 16-bit guitar-like power chord stabs following the bass, piercing pulse wave lead plays its own soaring melody over the bass, expressive pulse wave lead solo, sampled 16-bit console synth palette, bright chiptune arpeggios, jump and charged shot sound effects, loud club mix, 172 BPM
+```
+
+**Lyrics, пара 4:**
+```
+[Intro: chiptune arpeggio alone, pulse lead plays the melody once, drum fill]
+[Drop: galloping bass riff and two-step breakbeat, power chord stabs follow the bass, pulse lead plays the main melody on top]
+[Switch: bass changes pattern, lead melody continues, same drums]
+[Breakdown: drums out, lead melody alone with arpeggios, snare roll]
+[Drop: bass riff, power chords and lead melody together, louder]
+[Solo: drums and bass continue, pulse lead plays an expressive melancholic solo, melody rises into a brief major key lift]
+[Drop: main melody returns one last time with power chords]
+[Outro: one final bass hit, clean stop]
+```
+
+**Exclude Styles, пара 4:** базовый.
+
+### J5. Mega Drive, клубная сторона — ночной город, ранние 90-е
+
+Первая пара — без neuro. Вторая — единственное neuro-слово `evolving modulated texture` у баса. Сравниваем на одном
+настроении: приправа либо остаётся в альбоме, либо уходит.
+
+**Ожидание:** Mega Drive. Ночной город, клуб ранних 90-х, дерзко, но без дисторшна. В интро сирена и FM-хаус-стабы. На
+дропе ровный клубный грув, FM-бас ведёт рифф, металлический FM-лид его дублирует, хаус-стабы отвечают между фразами.
+Барабаны остаются two-step, не four-on-the-floor. Во второй паре бас меняет тембр по ходу риффа.
+
+**Style, пара 1:**
+```
+jump up drum and bass, cheeky and streetwise, late night city club energy, early 90s house groove, punchy two-step breakbeat, snappy snare, driving FM synth bass riff, metallic FM lead doubling the bass riff, FM house chord stabs, 16-bit era FM synthesis palette, siren and breaking glass sound effects, loud club mix, 172 BPM
+```
+
+**Style, пара 2 (плюс neuro):**
+```
+jump up drum and bass, cheeky and streetwise, late night city club energy, early 90s house groove, punchy two-step breakbeat, snappy snare, driving FM synth bass riff with evolving modulated texture, metallic FM lead doubling the bass riff, FM house chord stabs, 16-bit era FM synthesis palette, siren and breaking glass sound effects, loud club mix, 172 BPM
+```
+
+**Lyrics, обе пары:**
+```
+[Intro: siren and FM house chord stabs, drum fill, 8 bars]
+[Drop: FM bass riff and two-step breakbeat, FM lead doubles the riff, house stabs answer]
+[Switch: bass riff changes pattern, same drums]
+[Breakdown: drums out, bass riff filtered, house stabs, breaking glass, snare roll]
+[Drop: full hook returns louder]
+[Outro: one final bass hit, clean stop]
+```
+
+Во второй паре в тег `[Switch]` дописать `, bass texture morphs`.
+
+**Exclude Styles:** базовый плюс `four on the floor, house tempo, dark ambient, slow`.
+
+Риск: `house groove` утащит барабаны в 4/4. Если так в обеих парах — убрать `early 90s house groove`, оставить
+`FM house chord stabs` единственным словом про хаус.
+
+**Пара 3 — структура B.** Style и Exclude пары 1 (без neuro). Схема «диджейская»: длинное интро на одних барабанах,
+потом стабы, потом бас; в середине секция без баса, где грув держат стабы и барабаны; outro — барабаны одни восемь
+тактов и стоп, как под сведение.
+
+**Ожидание, пара 3:** палитра та же. Первые 8 тактов только two-step и сирена, потом хаус-стабы, и лишь на дропе бас;
+посреди трека бас уходит, а грув не проваливается; в конце бас выключается раньше барабанов.
+
+**Lyrics, пара 3 (структура B):**
+```
+[Intro: two-step drums alone with siren, 8 bars]
+[Intro: FM house chord stabs join the drums, bass hinted, 8 bars]
+[Drop: FM bass riff and two-step breakbeat, FM lead doubles the riff, house stabs answer, 32 bars]
+[Stabs section: bass out, drums keep rolling, house chord stabs carry the groove, 16 bars]
+[Drop: bass riff returns with a new pattern, FM lead doubles, louder, 32 bars]
+[Breakdown: drums out, bass riff filtered, breaking glass, snare roll, 8 bars]
+[Drop: full hook, 16 bars]
+[Outro: bass out, drums roll alone, 8 bars, stop dead]
+```
+
+### J6. PlayStation — солнечный, скорость, бонус
+
+**Ожидание:** PlayStation. Дневная трасса, бонус-этап, мажор, эйфория без пэдов. В интро звук чекпойнта и рейв-стаб. На
+дропе прыгучий бас, яркий FM-лид дублирует рифф, вокруг рейв-стабы и ховер начала 90-х, палитра чистая, CD-качества,
+не чиповая. SFX — бонусы и чекпойнт. Самый светлый и самый «не 8-битный» трек ядра.
+
+**Style:**
+```
+jump up drum and bass, sunny and euphoric, daytime racing bonus stage energy, bright major key, punchy two-step breakbeat, snappy snare, bouncy wobbling bass riff, bright FM lead doubling the bass riff, early 90s rave synth stabs, hoover synth riff, clean 32-bit CD-quality sampled synth palette, checkpoint and bonus sound effects, loud club mix, 174 BPM
+```
+
+**Lyrics:**
+```
+[Intro: checkpoint sound effect and rave synth stab, drum fill, 8 bars]
+[Drop: bouncy bass riff and two-step breakbeat, FM lead doubles the riff, rave stabs answer]
+[Switch: bass riff changes pattern, hoover riff, same drums]
+[Breakdown: drums out, hoover riff alone, bonus sound effects, snare roll]
+[Drop: full hook returns louder]
+[Outro: one final bass hit, clean stop]
+```
+
+**Exclude Styles:** базовый плюс `trance, dark, minor key`.
+
+Риск: `euphoric` может позвать трансовые пэды. `soft pads` уже в Exclude; если пэды всё равно пришли — заменить
+`euphoric` на `playful`.
+
+**Пара 3 — структура B.** Style и Exclude пар 1–2. Схема «гонка»: два дропа подряд без switch (второй ведёт ховер),
+звук чекпойнта на границах секций, в конце «финальный круг»: бас удваивает скорость, хэты удваиваются.
+
+**Ожидание, пара 3:** палитра та же. Чекпойнт, рейв-стаб нарастает со снейр-роллом; первый дроп короткий, сразу
+второй с ховером в роли хука; после breakdown длинный полный дроп; перед концом чекпойнт и заметное ускорение
+внутри того же темпа.
+
+**Lyrics, пара 3 (структура B):**
+```
+[Intro: checkpoint sound effect, rave synth stab builds with snare roll, no bass, 8 bars]
+[Drop: bouncy bass riff and two-step breakbeat, FM lead doubles the riff, 16 bars]
+[Second drop: hoover riff takes over the hook, bass follows it, 16 bars]
+[Breakdown: drums out, rave stabs and bonus sound effects, snare roll, 8 bars]
+[Drop: full hook returns louder, rave stabs and hoover trade, 32 bars]
+[Final lap: checkpoint sound effect, bass riff doubles its speed, hi-hats doubled, 16 bars]
+[Outro: one final bass hit, bonus sound effect, clean stop]
+```
+
+---
 
 ## Залп 2 — соседи (черновик, правлю после оценок залпа 1)
 
@@ -573,3 +966,50 @@ Continue?. Имён игр и персонажей нет.
   jrpg. В j4 мелодики много
 - J5 - надо придумать - примешать нейрофанк кажется ок.
 - J6 - надо придумать
+
+### Залп 2 — ядро, второй заход
+
+Колонка «Попал в ожидание» — да / частично / нет, по строке «Ожидание» под промптом. Оценка 1–5 — как раньше.
+
+| Код   | Оценка | Попал в ожидание | Что не так | Ссылка | Примечания |
+|-------|--------|------------------|------------|--------|------------|
+| J1-1a |        |                  |            |        |            |
+| J1-1b |        |                  |            |        |            |
+| J1-2a |        |                  |            |        |            |
+| J1-2b |        |                  |            |        |            |
+| J1-3a |        |                  |            |        |            |
+| J1-3b |        |                  |            |        |            |
+| J2-1a |        |                  |            |        |            |
+| J2-1b |        |                  |            |        |            |
+| J2-2a |        |                  |            |        |            |
+| J2-2b |        |                  |            |        |            |
+| J2-3a |        |                  |            |        |            |
+| J2-3b |        |                  |            |        |            |
+| J2-4a |        |                  |            |        |            |
+| J2-4b |        |                  |            |        |            |
+| J3-1a |        |                  |            |        |            |
+| J3-1b |        |                  |            |        |            |
+| J3-2a |        |                  |            |        |            |
+| J3-2b |        |                  |            |        |            |
+| J3-3a |        |                  |            |        |            |
+| J3-3b |        |                  |            |        |            |
+| J4-1a |        |                  |            |        |            |
+| J4-1b |        |                  |            |        |            |
+| J4-2a |        |                  |            |        |            |
+| J4-2b |        |                  |            |        |            |
+| J4-3a |        |                  |            |        |            |
+| J4-3b |        |                  |            |        |            |
+| J4-4a |        |                  |            |        |            |
+| J4-4b |        |                  |            |        |            |
+| J5-1a |        |                  |            |        |            |
+| J5-1b |        |                  |            |        |            |
+| J5-2a |        |                  |            |        |            |
+| J5-2b |        |                  |            |        |            |
+| J5-3a |        |                  |            |        |            |
+| J5-3b |        |                  |            |        |            |
+| J6-1a |        |                  |            |        |            |
+| J6-1b |        |                  |            |        |            |
+| J6-2a |        |                  |            |        |            |
+| J6-2b |        |                  |            |        |            |
+| J6-3a |        |                  |            |        |            |
+| J6-3b |        |                  |            |        |            |
