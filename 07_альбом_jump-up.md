@@ -746,7 +746,7 @@ oldschool jungle, raw and hyped, chopped amen break, fast rolling drums, deep re
 [Outro: drums stop dead, one siren, end]
 ```
 
-**Exclude Styles:** `lyrics, sung verses, rap verses, vocals, singing, timestretched vocal shouts, clean modern mix, trap, brass, trumpets, horns, fanfare, orchestral, strings, live instruments`
+**Exclude Styles:** `lyrics, sung verses, rap verses, vocals, singing, timestretched vocal shouts, clean modern mix, trap, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
 
 Заметка: `timestretched vocal shouts` из файла 04 убраны в Exclude — на альбоме без вокала выкрики будут торчать. Если
 jungle без них звучит пусто — вернуть в Style.
@@ -768,7 +768,7 @@ oldschool jungle, raw and cheeky, chopped amen break, fast rolling drums, wobbli
 [Outro: drums stop dead, one bass hit, end]
 ```
 
-**Exclude Styles:** `lyrics, sung words, rap, vocals, singing, soft pads, piano, clean modern mix, brass, trumpets, horns, fanfare, orchestral, strings, live instruments`
+**Exclude Styles:** `lyrics, sung words, rap, vocals, singing, soft pads, piano, clean modern mix, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
 
 ### N3. Роллер
 
@@ -789,7 +789,7 @@ dancefloor drum and bass roller, driving and steady, tight punchy breakbeat, sha
 [Outro: drums cut to a single hit, end]
 ```
 
-**Exclude Styles:** `lyrics, sung words, rap, vocals, singing, melody-heavy, soft pads, piano, brass, trumpets, horns, fanfare, orchestral, strings, live instruments`
+**Exclude Styles:** `lyrics, sung words, rap, vocals, singing, melody-heavy, soft pads, piano, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
 
 ### N4. Halftime — перелом
 
@@ -810,7 +810,7 @@ halftime drum and bass, heavy and hypnotic, drum and bass tempo, slow half-time 
 [Outro: drums stop, sub fades]
 ```
 
-**Exclude Styles:** `lyrics, sung words, rap, vocals, singing, soft pads, piano, fast rolling drums, full-time breakbeat, trap, brass, trumpets, horns, fanfare, orchestral, strings, live instruments`
+**Exclude Styles:** `lyrics, sung words, rap, vocals, singing, soft pads, piano, fast rolling drums, full-time breakbeat, trap, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
 
 ### N5. Liquid-лайт — передышка
 
@@ -831,7 +831,7 @@ liquid drum and bass, warm and bright, smooth rolling breakbeat, crisp snare, de
 [Outro: drums fade, arpeggio alone, soft end]
 ```
 
-**Exclude Styles:** `lyrics, sung words, rap, vocals, singing, piano, string pads, aggressive bass, distortion, brass, trumpets, horns, fanfare, orchestral, strings, live instruments`
+**Exclude Styles:** `lyrics, sung words, rap, vocals, singing, piano, string pads, aggressive bass, distortion, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
 
 Заметка: `clean polished mix` вместо `loud club mix` — единственное отступление от инварианта, иначе передышки не будет.
 Если трек выпадает из альбома по громкости — вернуть `loud club mix`.
@@ -851,7 +851,7 @@ drill and bass breakcore burst, chaotic and playful, hyper-chopped amen break, s
 [End: abrupt stop on a glitch]
 ```
 
-**Exclude Styles:** `vocals, singing, rap, lyrics, slow intro, ambient, steady groove, brass, trumpets, horns, fanfare, orchestral, strings, live instruments`
+**Exclude Styles:** `vocals, singing, rap, lyrics, slow intro, ambient, steady groove, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
 
 ---
 
