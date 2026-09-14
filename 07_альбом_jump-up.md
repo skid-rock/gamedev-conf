@@ -734,14 +734,14 @@ mix.
 
 **Style:**
 ```
-oldschool jungle, raw and hyped, chopped amen break, fast rolling drums, deep reggae sub bass, rave stabs, 8-bit square lead carries the main melody, air horn and siren samples, arcade sound effects, dusty sampler sound, loud club mix, 170 BPM
+oldschool jungle, raw and hyped, chopped amen break, fast rolling drums, deep reggae sub bass, rave stabs, 8-bit square lead carries the main melody, siren samples, arcade sound effects, dusty sampler sound, loud club mix, 170 BPM
 ```
 
 **Lyrics:**
 ```
 [Intro: rave stab and siren, then amen break cuts in immediately]
 [Drop: chopped amen break and reggae sub bass, 8-bit lead plays the main melody]
-[Breakdown: drums drop out, 8-bit lead alone with air horn]
+[Breakdown: drums drop out, 8-bit lead alone with siren]
 [Drop: amen break returns with double-time chops, bass heavier, lead melody on top]
 [Outro: drums stop dead, one siren, end]
 ```
@@ -751,11 +751,46 @@ oldschool jungle, raw and hyped, chopped amen break, fast rolling drums, deep re
 Заметка: `timestretched vocal shouts` из файла 04 убраны в Exclude — на альбоме без вокала выкрики будут торчать. Если
 jungle без них звучит пусто — вернуть в Style.
 
+Заметка 12.09.2026: `air horn` убран из Style и Lyrics — слово `horn` спорило с `horns` в Exclude. Наблюдение
+пользователя по первым дублям: мелодия у N1 та же, что у мажорных J, хотя здесь лид ведёт свою мелодию, а не дублирует
+бас. Значит, формула «лид дублирует бас» — не главная причина схождения мелодий; остаются словарь промпта, мажор в
+чиптюне. Personalize / My Taste проверен — выключен, эта причина отпадает.
+
+**Пара 2 — против схождения мелодии.** Первая проба рецепта: лад, характер мелодии словами, Weirdness выше. Мажор
+уходит, jungle и так минорный по природе; мелодии заданы синкопы, широкие скачки и перекличка со стабами; в Exclude
+`major key` и `simple pentatonic melody`, чтобы отрезать заезженный контур. Weirdness 55% вместо 35%, остальное как у
+всех N. Если мелодия ушла от мажорных J — тот же рецепт на J2 и J6.
+
+Заодно тест тональности: вместо `minor key` в Style стоит `in E minor`. Гайды сообщества советуют писать тональность в
+Style, но держит ли её v6 — [не проверено]. Ми минор выбран как типичная тональность jungle-сабов. Проверка — тюнер или
+анализ тональности по готовому треку. Если держит — у каждого трека альбома своя тональность, и мелодиям труднее
+совпасть.
+
+**Ожидание, пара 2:** amen, reggae sub, rave-стабы как в паре 1, но лид минорный, рваный, со скачками через октаву, и
+он отвечает стабам, а не поёт поверх ровной пентатоникой. Первые 30 секунд дропа: мелодия не должна напоминать J2 и J6.
+Тональность — ми минор, проверить по тюнеру.
+
+**Style, пара 2:**
+```
+oldschool jungle, raw and dark, in E minor, chopped amen break, fast rolling drums, deep reggae sub bass, rave stabs, syncopated 8-bit square lead melody with wide interval leaps, call and response between the lead and the rave stabs, siren samples, arcade sound effects, dusty sampler sound, loud club mix, 170 BPM
+```
+
+**Lyrics, пара 2:**
+```
+[Intro: rave stab and siren, then amen break cuts in immediately]
+[Drop: chopped amen break and reggae sub bass, syncopated 8-bit lead melody answers the rave stabs]
+[Breakdown: drums drop out, 8-bit lead alone, wide leaps, siren]
+[Drop: amen break returns with double-time chops, bass heavier, lead melody on top]
+[Outro: drums stop dead, one siren, end]
+```
+
+**Exclude Styles, пара 2:** как у пары 1 плюс `major key, happy, simple pentatonic melody`.
+
 ### N2. Jungle с talking bass — мост к ядру
 
 **Style:**
 ```
-oldschool jungle, raw and cheeky, chopped amen break, fast rolling drums, wobbling talking bass riff, 8-bit square lead doubling the bass riff, rave stabs, siren samples, arcade sound effects, loud club mix, 172 BPM
+oldschool jungle, raw and cheeky, in G minor, chopped amen break, fast rolling drums, wobbling talking bass riff, 8-bit square lead doubling the bass riff, rave stabs, siren samples, arcade sound effects, loud club mix, 172 BPM
 ```
 
 **Lyrics:**
@@ -770,13 +805,17 @@ oldschool jungle, raw and cheeky, chopped amen break, fast rolling drums, wobbli
 
 **Exclude Styles:** `lyrics, sung words, rap, vocals, singing, soft pads, piano, clean modern mix, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
 
+Заметка 12.09.2026: в Style добавлено `in G minor` — вторая проверка тональности после N1 (там ми минор). Разные
+тональности у соседних треков, чтобы мелодиям было труднее совпасть. Держит ли v6 тональность — [не проверено],
+смотреть по тюнеру.
+
 ### N3. Роллер
 
 Файл 04 §4 с 8-bit-лидом как единственной мелодией.
 
 **Style:**
 ```
-dancefloor drum and bass roller, driving and steady, tight punchy breakbeat, sharp snare, deep rolling sub bass, minimal stabs, 8-bit square lead plays a short repeating motif, arcade sound effects sparse, loud club mix, relentless groove, 174 BPM
+dancefloor drum and bass roller, driving and steady, in F minor, tight punchy breakbeat, sharp snare, deep rolling sub bass, minimal stabs, 8-bit square lead plays a short repeating motif, arcade sound effects sparse, loud club mix, relentless groove, 174 BPM
 ```
 
 **Lyrics:**
@@ -790,6 +829,9 @@ dancefloor drum and bass roller, driving and steady, tight punchy breakbeat, sha
 ```
 
 **Exclude Styles:** `lyrics, sung words, rap, vocals, singing, melody-heavy, soft pads, piano, brass, trumpets, horns, fanfare, orchestral, strings, live instruments, lead guitar, guitar solo, rock band`
+
+Заметка 12.09.2026: в Style добавлено `in F minor` — тест тональности, как у N1 (ми минор) и N2 (соль минор).
+[не проверено], смотреть по тюнеру.
 
 ### N4. Halftime — перелом
 
@@ -818,7 +860,7 @@ Liquid без пэдов и пианино: их место занимают ч�
 
 **Style:**
 ```
-liquid drum and bass, warm and bright, smooth rolling breakbeat, crisp snare, deep round sub bass, 8-bit square lead carries a melodic theme, plucked chiptune arpeggios instead of pads, sparse arcade sound effects, clean polished mix, 174 BPM
+liquid drum and bass, warm and bright, in D major, smooth rolling breakbeat, crisp snare, deep round sub bass, 8-bit square lead carries a melodic theme, plucked chiptune arpeggios instead of pads, sparse arcade sound effects, clean polished mix, 174 BPM
 ```
 
 **Lyrics:**
@@ -835,6 +877,10 @@ liquid drum and bass, warm and bright, smooth rolling breakbeat, crisp snare, de
 
 Заметка: `clean polished mix` вместо `loud club mix` — единственное отступление от инварианта, иначе передышки не будет.
 Если трек выпадает из альбома по громкости — вернуть `loud club mix`.
+
+Заметка 12.09.2026: в Style добавлено `in D major` — тест тональности, единственный мажорный сосед. Если мелодия
+совпадёт с мажорными J даже в другой тональности — схождение не про тональность, а про мажорный чиптюн как таковой.
+[не проверено], смотреть по тюнеру.
 
 ### B1. Breakcore-вставка
 
@@ -1013,3 +1059,28 @@ Continue?. Имён игр и персонажей нет.
 | J6-2b |        |                  |            |        |            |
 | J6-3a |        |                  |            |        |            |
 | J6-3b |        |                  |            |        |            |
+
+### Залп 2 — соседи
+
+Колонка «Попал в ожидание» — по строке под промптом. N4 закрыт репризой R3, строк нет.
+
+| Код   | Оценка | Попал в ожидание | Что не так | Ссылка | Примечания |
+|-------|--------|------------------|------------|--------|------------|
+| N1-1a |        |                  |            |        |            |
+| N1-1b |        |                  |            |        |            |
+| N1-2a |        |                  |            |        |            |
+| N1-2b |        |                  |            |        |            |
+| N2-1a |        |                  |            |        |            |
+| N2-1b |        |                  |            |        |            |
+| N2-2a |        |                  |            |        |            |
+| N2-2b |        |                  |            |        |            |
+| N3-1a |        |                  |            |        |            |
+| N3-1b |        |                  |            |        |            |
+| N3-2a |        |                  |            |        |            |
+| N3-2b |        |                  |            |        |            |
+| N5-1a |        |                  |            |        |            |
+| N5-1b |        |                  |            |        |            |
+| N5-2a |        |                  |            |        |            |
+| N5-2b |        |                  |            |        |            |
+| B1-1a |        |                  |            |        |            |
+| B1-1b |        |                  |            |        |            |
