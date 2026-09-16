@@ -4,28 +4,59 @@ import (
 	"sort"
 )
 
-// Догадка об аккорде: мажорное или минорное трезвучие.
+// Качество аккорда.
+type chordQuality int
+
+const (
+	majorChord chordQuality = iota
+	minorChord
+	// Квинта без терции: мажор это или минор, по звуку не сказать.
+	powerChord
+)
+
+// Порог доли терции в середине: тише — терции в аккорде нет.
+const thirdThreshold = 0.04
+
+// Бас на корне или на другой ноте аккорда, если его доля в басу не меньше этой.
+const inversionShare = 0.5
+
+// Догадка об аккорде: трезвучие или квинта, с басом.
 type chordGuess struct {
-	Root  int
-	Minor bool
-	// Доля энергии середины внутри трезвучия, 0..1.
+	Root    int
+	Quality chordQuality
+	// Нота баса, если это не корень, иначе −1.
+	Bass int
+	// Доля энергии середины внутри аккорда, 0..1.
 	Fit   float64
 	Empty bool
 }
 
-func (g chordGuess) String() string {
+// Название без баса: «Am», «E5».
+func (g chordGuess) Name() string {
 	if g.Empty {
 		return "—"
 	}
 	name := noteNames[g.Root]
-	if g.Minor {
+	switch g.Quality {
+	case minorChord:
 		name += "m"
+	case powerChord:
+		name += "5"
 	}
 	return name
 }
 
-// Подобрать трезвучие по середине, с доводом от баса: нота баса на корне
-// отличает Am от C, у которых две общие ноты.
+// Название с басом: «Am/E».
+func (g chordGuess) String() string {
+	if g.Empty || g.Bass < 0 {
+		return g.Name()
+	}
+	return g.Name() + "/" + noteNames[g.Bass]
+}
+
+// Подобрать трезвучие по середине, с доводом от баса. Нота баса на корне весит
+// больше, чем на терции или квинте: так Am отличается от C, у которых две общие
+// ноты, но Am/E (бас на квинте) не превращается в E.
 func guessChord(bass, mid chroma) chordGuess {
 	b := bass.normalized()
 	m := mid.normalized()
@@ -36,20 +67,54 @@ func guessChord(bass, mid chroma) chordGuess {
 	best := chordGuess{}
 	bestScore := -1.0
 	for root := 0; root < 12; root++ {
-		for _, minor := range []bool{false, true} {
-			third := 4
-			if minor {
-				third = 3
-			}
-			fit := m[root] + m[(root+third)%12] + m[(root+7)%12]
-			score := fit + 0.5*b[root]
+		fifth := (root + 7) % 12
+		for _, q := range []chordQuality{majorChord, minorChord} {
+			third := (root + thirdStep(q)) % 12
+			fit := m[root] + m[third] + m[fifth]
+			score := fit + 0.5*b[root] + 0.25*(b[third]+b[fifth])
 			if score > bestScore {
 				bestScore = score
-				best = chordGuess{Root: root, Minor: minor, Fit: fit}
+				best = chordGuess{Root: root, Quality: q, Fit: fit}
 			}
 		}
 	}
+
+	// Ни малой, ни большой терции не слышно ни сверху, ни в басу — это квинта.
+	minor3, major3 := (best.Root+3)%12, (best.Root+4)%12
+	if m[minor3] < thirdThreshold && m[major3] < thirdThreshold &&
+		b[minor3] < thirdThreshold && b[major3] < thirdThreshold {
+		best.Quality = powerChord
+		best.Fit = m[best.Root] + m[(best.Root+7)%12]
+	}
+
+	best.Bass = -1
+	if b.sum() > 0 {
+		low := b.top(1)[0]
+		if low != best.Root && b[low] >= inversionShare && best.hasTone(low) {
+			best.Bass = low
+		}
+	}
 	return best
+}
+
+func thirdStep(q chordQuality) int {
+	if q == minorChord {
+		return 3
+	}
+	return 4
+}
+
+// Входит ли нота в аккорд.
+func (g chordGuess) hasTone(pc int) bool {
+	step := (pc - g.Root + 12) % 12
+	switch {
+	case step == 0 || step == 7:
+		return true
+	case g.Quality == powerChord:
+		return false
+	default:
+		return step == thirdStep(g.Quality)
+	}
 }
 
 // Строка таблицы по тактам.
@@ -68,7 +133,7 @@ func barRows(frames []frameChroma, bpm, start float64, barsPerRow int, duration 
 	if bpm <= 0 || barsPerRow <= 0 {
 		return nil
 	}
-	step := float64(barsPerRow) * 4 * 60 / bpm
+	step := float64(barsPerRow) * barSeconds(bpm)
 
 	var rows []barRow
 	for k := 0; ; k++ {
@@ -90,7 +155,13 @@ func barRows(frames []frameChroma, bpm, start float64, barsPerRow int, duration 
 	return rows
 }
 
-// Сколько раз встретился каждый аккорд, по убыванию.
+// Длина четырёхдольного такта в секундах.
+func barSeconds(bpm float64) float64 {
+	return 4 * 60 / bpm
+}
+
+// Сколько раз встретился каждый аккорд, по убыванию. Обращения считаются
+// вместе с основным видом: сводка нужна, чтобы увидеть вращение гармонии.
 type chordCount struct {
 	Name  string
 	Count int
@@ -103,7 +174,7 @@ func chordSummary(rows []barRow) []chordCount {
 		if r.Chord.Empty {
 			continue
 		}
-		name := r.Chord.String()
+		name := r.Chord.Name()
 		if counts[name] == 0 {
 			order = append(order, name)
 		}

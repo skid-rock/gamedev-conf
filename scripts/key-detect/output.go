@@ -32,6 +32,15 @@ func verdict(a analysis) string {
 	}
 }
 
+// Концовка для таблицы: «A 88%», без концовки — прочерк.
+func endingText(e ending) string {
+	if !e.Found {
+		return "—"
+	}
+	pc, share := e.note()
+	return fmt.Sprintf("%s %.0f%%", noteNames[pc], share*100)
+}
+
 // Отрыв лучшего кандидата от второго: чем меньше, тем спорнее ответ.
 func margin(a analysis) float64 {
 	return a.Ranked[0].Score - a.Ranked[1].Score
@@ -39,15 +48,15 @@ func margin(a analysis) float64 {
 
 // Таблица в стандартный вывод.
 func printTable(results []analysis) {
-	fmt.Printf("%-24s %-18s %-18s %6s %6s %8s %5s %6s  %s\n",
-		"ТРЕК", "ЗАЯВЛЕНО", "НАЙДЕНО", "СЧЁТ", "ОТРЫВ", "ЗВУКОРЯД", "БАС", "СТРОЙ", "ОЦЕНКА")
+	fmt.Printf("%-24s %-18s %-18s %6s %6s %8s %5s %-8s %6s  %s\n",
+		"ТРЕК", "ЗАЯВЛЕНО", "НАЙДЕНО", "СЧЁТ", "ОТРЫВ", "ЗВУКОРЯД", "БАС", "КОНЕЦ", "СТРОЙ", "ОЦЕНКА")
 	for _, a := range results {
 		declared := "—"
 		if a.HasDeclared {
 			declared = a.Declared.Name()
 		}
 		best := a.best()
-		fmt.Printf("%-24s %-18s %-18s %6.3f %6.3f %7.0f%% %5s %+5.0fц  %s\n",
+		fmt.Printf("%-24s %-18s %-18s %6.3f %6.3f %7.0f%% %5s %-8s %+5.0fц  %s\n",
 			shortName(a.Path),
 			declared,
 			best.Name(),
@@ -55,6 +64,7 @@ func printTable(results []analysis) {
 			margin(a),
 			scaleShare(a.Total, best)*100,
 			noteNames[a.Bass.top(1)[0]],
+			endingText(a.Ending),
 			a.Tuning*100,
 			verdict(a),
 		)
@@ -69,12 +79,20 @@ func printDetails(a analysis, top int) {
 
 	fmt.Println("\nКандидаты:")
 	for i, k := range a.Ranked[:min(top, len(a.Ranked))] {
-		fmt.Printf("  %d. %-18s %.3f  звукоряд %2.0f%%\n", i+1, k.Name(), k.Score, scaleShare(a.Total, k)*100)
+		fmt.Printf("  %2d. %-18s %.3f = %.3f + конец %.3f   звукоряд %2.0f%%\n",
+			i+1, k.Name(), k.Score, k.Corr, k.Bonus, scaleShare(a.Total, k)*100)
 	}
 	if a.HasDeclared {
 		rank, k := rankOf(a.Ranked, a.Declared)
-		fmt.Printf("  Заявлено: %s — место %d, счёт %.3f, звукоряд %2.0f%%\n",
-			k.Name(), rank, k.Score, scaleShare(a.Total, k)*100)
+		fmt.Printf("  Заявлено: %s — место %d, счёт %.3f = %.3f + конец %.3f, звукоряд %2.0f%%\n",
+			k.Name(), rank, k.Score, k.Corr, k.Bonus, scaleShare(a.Total, k)*100)
+	}
+
+	if e := a.Ending; e.Found {
+		fmt.Printf("\nКонцовка %.1f–%.1f с: %s %s, аккорд %s\n",
+			e.From, e.To, e.Source, topNotes(e.Notes, 3, best.Tonic), e.Chord)
+	} else {
+		fmt.Println("\nКонцовка не найдена: звука выше порога тишины нет")
 	}
 
 	printEvidence(a, best.Tonic)
@@ -151,9 +169,9 @@ func printBars(a analysis, barsPerRow int) {
 	}
 
 	tonic := a.best().Tonic
-	fmt.Printf("  %-5s %6s  %-6s %-22s %-34s\n", "ТАКТ", "ВРЕМЯ", "АККОРД", "БАС", "СЕРЕДИНА")
+	fmt.Printf("  %-5s %6s  %-8s %-22s %-34s\n", "ТАКТ", "ВРЕМЯ", "АККОРД", "БАС", "СЕРЕДИНА")
 	for _, r := range rows {
-		fmt.Printf("  %-5d %6.1f  %-6s %-22s %-34s\n",
+		fmt.Printf("  %-5d %6.1f  %-8s %-22s %-34s\n",
 			r.Bar, r.Start, r.Chord.String(), topNotes(r.Bass, 3, tonic), topNotes(r.Mid, 5, tonic))
 	}
 }
@@ -209,6 +227,8 @@ func writeJSON(path string, results []analysis, top int) error {
 	type candidate struct {
 		Key        string  `json:"key"`
 		Score      float64 `json:"score"`
+		Corr       float64 `json:"corr"`
+		Bonus      float64 `json:"ending_bonus"`
 		ScaleShare float64 `json:"scale_share"`
 	}
 	type record struct {
@@ -220,6 +240,9 @@ func writeJSON(path string, results []analysis, top int) error {
 		Margin       float64            `json:"key_margin"`
 		ScaleShare   float64            `json:"scale_share"`
 		BassRoot     string             `json:"bass_root"`
+		EndingNote   string             `json:"ending_note,omitempty"`
+		EndingShare  float64            `json:"ending_share,omitempty"`
+		EndingChord  string             `json:"ending_chord,omitempty"`
 		TuningCents  float64            `json:"tuning_cents"`
 		Verdict      string             `json:"verdict"`
 		Candidates   []candidate        `json:"candidates"`
@@ -251,13 +274,25 @@ func writeJSON(path string, results []analysis, top int) error {
 			Bass:        toMap(a.Bass),
 			Mid:         toMap(a.Mid),
 		}
+		if a.Ending.Found {
+			pc, share := a.Ending.note()
+			r.EndingNote = noteNames[pc]
+			r.EndingShare = round3(share)
+			r.EndingChord = a.Ending.Chord.String()
+		}
 		if a.HasDeclared {
 			rank, _ := rankOf(a.Ranked, a.Declared)
 			r.Declared = a.Declared.Name()
 			r.DeclaredRank = rank
 		}
 		for _, k := range a.Ranked[:min(top, len(a.Ranked))] {
-			r.Candidates = append(r.Candidates, candidate{k.Name(), round3(k.Score), round3(scaleShare(a.Total, k))})
+			r.Candidates = append(r.Candidates, candidate{
+				Key:        k.Name(),
+				Score:      round3(k.Score),
+				Corr:       round3(k.Corr),
+				Bonus:      round3(k.Bonus),
+				ScaleShare: round3(scaleShare(a.Total, k)),
+			})
 		}
 		for _, row := range a.Rows {
 			r.Chords = append(r.Chords, row.Chord.String())

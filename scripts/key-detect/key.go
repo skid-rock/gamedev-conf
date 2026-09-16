@@ -32,10 +32,20 @@ var degreeWeights = [7]float64{6.0, 3.5, 4.5, 4.0, 5.0, 3.5, 3.5}
 // Вес ноты вне звукоряда.
 const outsideWeight = 2.0
 
-// Тональность-кандидат и её счёт — корреляция хромы с шаблоном лада.
+// Прибавка к счёту, если вся концовка стоит на тонике кандидата.
+// Разрыв между ладами на одних нотах обычно меньше 0.06, а 0.1 хватает,
+// чтобы ясная финальная нота его перекрыла.
+const endingBonus = 0.1
+
+// Тональность-кандидат и её счёт.
 type keyCandidate struct {
 	Tonic int
 	Scale int
+	// Корреляция общей хромы с шаблоном лада.
+	Corr float64
+	// Прибавка за концовку: endingBonus × доля тоники в концовке.
+	Bonus float64
+	// Итог: Corr + Bonus.
 	Score float64
 }
 
@@ -72,13 +82,15 @@ func (k keyCandidate) samePitchSet(o keyCandidate) bool {
 	return k.pitchSet() == o.pitchSet()
 }
 
-// Все тональности по убыванию счёта.
-func rankKeys(c chroma) []keyCandidate {
+// Все тональности по убыванию счёта. end — доли нот концовки, пустая хрома — без прибавки.
+func rankKeys(c, end chroma) []keyCandidate {
 	var out []keyCandidate
 	for tonic := 0; tonic < 12; tonic++ {
 		for scale := range scaleTypes {
 			k := keyCandidate{Tonic: tonic, Scale: scale}
-			k.Score = correlation(c, k.template())
+			k.Corr = correlation(c, k.template())
+			k.Bonus = endingBonus * end[tonic]
+			k.Score = k.Corr + k.Bonus
 			out = append(out, k)
 		}
 	}

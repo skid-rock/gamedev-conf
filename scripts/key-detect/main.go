@@ -23,6 +23,7 @@ type analysis struct {
 	Tuning float64
 
 	Bass, Mid, Total chroma
+	Ending           ending
 	Ranked           []keyCandidate
 
 	Declared    keyCandidate
@@ -165,11 +166,13 @@ func analyze(path string, opts options) (analysis, error) {
 		Bass:     bass,
 		Mid:      mid,
 		Total:    total,
-		Ranked:   rankKeys(total),
 	}
 	res.Declared, res.HasDeclared = meta.declaredKey()
 	res.BPM, res.Start, res.GridSource = resolveGrid(meta, opts)
 	res.Rows = barRows(frames, res.BPM, res.Start, 1, res.Duration)
+	// Окно концовки зависит только от темпа: оно отсчитывается от последнего звука, а не от сетки.
+	res.Ending = findEnding(frames, endingWindow(res.BPM))
+	res.Ranked = rankKeys(total, res.Ending.Notes)
 	return res, nil
 }
 
