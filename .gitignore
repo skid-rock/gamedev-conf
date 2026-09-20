@@ -10,5 +10,6 @@ scripts/suno-download/*.json
 scripts/suno-download/suno-download
 scripts/bpm-detect/bpm-detect
 scripts/key-detect/key-detect
+scripts/edge-detect/edge-detect
 
 /music
