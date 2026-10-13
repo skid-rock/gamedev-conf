@@ -11,6 +11,7 @@ scripts/suno-download/suno-download
 scripts/bpm-detect/bpm-detect
 scripts/key-detect/key-detect
 scripts/edge-detect/edge-detect
+scripts/pptx-merge/pptx-merge
 
 /music
 /presentations
